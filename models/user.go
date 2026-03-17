@@ -53,9 +53,9 @@ func GetAllUsers() ([]User, error) {
 	return users, nil
 }
 
-func GetUserByEmail(user User) (*User, error) {
+func GetUserByEmail(email, password string) (*User, error) {
 	query := `SELECT id, email, password FROM users where email = ?`
-	row := db.DB.QueryRow(query, user.Email)
+	row := db.DB.QueryRow(query, email)
 
 	var dbUser User
 	err := row.Scan(&dbUser.ID, &dbUser.Email, &dbUser.Password)
@@ -63,9 +63,9 @@ func GetUserByEmail(user User) (*User, error) {
 		return nil, err
 	}
 
-	isValidPassword := utils.CheckPasswordHash(user.Password, dbUser.Password)
+	isValidPassword := utils.CheckPasswordHash(password, dbUser.Password)
 	if isValidPassword {
-		return &user, nil
+		return &dbUser, nil
 	}
 	return nil, nil
 }

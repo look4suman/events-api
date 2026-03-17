@@ -38,13 +38,14 @@ func signup(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"message": "User created successfully for id: " + strconv.FormatInt(u.ID, 10)})
 }
 
-func validateUser(user models.User) (bool, error) {
-	dbUser, err := models.GetUserByEmail(user)
+func validateUser(user *models.User) (bool, error) {
+	dbUser, err := models.GetUserByEmail(user.Email, user.Password)
 	if err != nil {
 		return false, err
 	}
 
 	if dbUser != nil {
+		user.ID = dbUser.ID
 		return true, nil
 	}
 
@@ -61,7 +62,7 @@ func login(ctx *gin.Context) {
 		return
 	}
 
-	isValid, err := validateUser(user)
+	isValid, err := validateUser(&user)
 	if err != nil {
 		slog.Error("Error while validating user", "error", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Error while validating user"})
@@ -73,6 +74,8 @@ func login(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Incorrect credentials"})
 		return
 	}
+
+	slog.Info("userid", "user id", user.ID)
 
 	token, err := utils.GenerateToken(user.Email, user.ID)
 	if err != nil {

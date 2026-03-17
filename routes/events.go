@@ -45,12 +45,14 @@ func createEvent(ctx *gin.Context) {
 		return
 	}
 
-	err := utils.VerifyToken(token)
+	userId, err := utils.VerifyToken(token)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
 		slog.Error("Not Authorized", "error", err)
 		return
 	}
+
+	slog.Info("userid", "id", userId)
 
 	var event models.Event
 	err = ctx.ShouldBindJSON(&event)
@@ -60,6 +62,7 @@ func createEvent(ctx *gin.Context) {
 		slog.Error("invalid event data", "error", err)
 		return
 	}
+	event.UserID = userId
 	e, err := event.Save()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create event"})
