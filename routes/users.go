@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/look4suman/events-api/models"
+	"github.com/look4suman/events-api/routes/utils"
 )
 
 func fetchUsers(ctx *gin.Context) {
@@ -73,6 +74,13 @@ func login(ctx *gin.Context) {
 		return
 	}
 
+	token, err := utils.GenerateToken(user.Email, user.ID)
+	if err != nil {
+		slog.Error("Error while fetching token", "error", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Error while fetching token"})
+		return
+	}
+
 	slog.Info("Logged in successfully")
-	ctx.JSON(http.StatusOK, gin.H{"message": "Logged in successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Logged in successfully", "token": token})
 }

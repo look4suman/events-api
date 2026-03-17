@@ -10,6 +10,5 @@ func RegisterRoutes(server *gin.Engine) {
 
 	server.GET("/users", fetchUsers)
 	server.POST("/signup", signup)
-
 	server.POST("/login", login)
 }

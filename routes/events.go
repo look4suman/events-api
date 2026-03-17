@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/look4suman/events-api/models"
+	"github.com/look4suman/events-api/routes/utils"
 )
 
 func getEvents(ctx *gin.Context) {
@@ -37,8 +38,22 @@ func getEventById(ctx *gin.Context) {
 }
 
 func createEvent(ctx *gin.Context) {
+	token := ctx.Request.Header.Get("Authorization")
+	if token == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Not token sent"})
+		slog.Error("Token not sent")
+		return
+	}
+
+	err := utils.VerifyToken(token)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "Not Authorized"})
+		slog.Error("Not Authorized", "error", err)
+		return
+	}
+
 	var event models.Event
-	err := ctx.ShouldBindJSON(&event)
+	err = ctx.ShouldBindJSON(&event)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid event data"})
