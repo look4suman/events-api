@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/look4suman/events-api/db"
@@ -63,4 +64,22 @@ func GetEventById(id int64) (*Event, error) {
 		return nil, err
 	}
 	return &event, nil
+}
+
+func (e Event) Update() error {
+	query := `
+	Update events
+	set name = ?, description = ?, location = ?, date_time = ?, user_id = ?
+	where id = ?
+	`
+	slog.Info("sql",
+		"query", query,
+		"args", []any{e.Name, e.Description, e.Location, e.DateTime, e.UserID, e.ID},
+	)
+
+	_, err := db.DB.Exec(query, e.Name, e.Description, e.Location, e.DateTime, e.UserID, e.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
