@@ -70,6 +70,13 @@ func updateEvent(ctx *gin.Context) {
 		return
 	}
 
+	userId := ctx.GetInt64("UserId")
+	if eventPtr.UserID != userId {
+		ctx.JSON(http.StatusForbidden, gin.H{"message": "Not authorized user"})
+		slog.Info("Not authorized user")
+		return
+	}
+
 	var updatedEvent models.Event
 	err = ctx.ShouldBindJSON(&updatedEvent)
 	if err != nil {
@@ -83,7 +90,6 @@ func updateEvent(ctx *gin.Context) {
 	eventPtr.Description = updatedEvent.Description
 	eventPtr.Location = updatedEvent.Location
 	eventPtr.Name = updatedEvent.Name
-	eventPtr.UserID = updatedEvent.UserID
 
 	err = eventPtr.Update()
 	if err != nil {
